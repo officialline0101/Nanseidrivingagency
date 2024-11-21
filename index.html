@@ -332,7 +332,7 @@
 
         document.addEventListener('DOMContentLoaded', function () {
             liff.init({
-                liffId: '2006594645-kRrodZo3'
+                liffId: '2005254357-zKma9BZk'
             }).then(() => {
                 console.log('LIFF初期化成功');
             }).catch((err) => {
@@ -438,29 +438,38 @@
         }
 
         function selectDate(cell) {
-            // "unavailable" クラスが付いている場合はクリックを無効化
-            if (cell.classList.contains('unavailable')) {
-                return; // 何もせずに終了
-            }
+    // "unavailable" クラスが付いている場合はクリックを無効化
+    if (cell.classList.contains('unavailable')) {
+        return; // 何もせずに終了
+    }
 
-            // 既に選択されているセルの選択を解除
-            const cells = document.querySelectorAll('.calendar td');
-            cells.forEach(td => td.classList.remove('selected'));
+    // 既に選択されているセルの選択を解除
+    const cells = document.querySelectorAll('.calendar td');
+    cells.forEach(td => td.classList.remove('selected'));
 
-            // 新しいセルを選択状態にする
-            cell.classList.add('selected');
+    // 新しいセルを選択状態にする
+    cell.classList.add('selected');
 
-            // 選択された日付と時間を取得
-            const selectedDay = cell.getAttribute('data-date'); // ISO形式の日付
-            const selectedTime = cell.parentElement.firstChild.textContent; // 時間
-            const date = new Date(selectedDay);
+    // 選択された日付と時間を取得
+    const selectedDay = cell.getAttribute('data-date'); // ISO形式の日付
+    const selectedTime = cell.parentElement.firstChild.textContent; // 時間
+    const date = new Date(selectedDay);
 
-            // 日付部分を「○○年○○月○○日 ○○:○○」形式に変換
-            selectedFullDate = `${date.getFullYear()}年${('0' + (date.getMonth() + 1)).slice(-2)}月${('0' + date.getDate()).slice(-2)}日 ${selectedTime}`;
+    // 時間部分を調整 (0時～2時は25時形式に変更)
+    const timeParts = selectedTime.split(':');
+    let hour = parseInt(timeParts[0], 10);
+    const minute = timeParts[1];
 
-            // 希望日時を即座に更新
-            updateDisplayInfo();
-        }
+    if (hour >= 0 && hour <= 2) {
+        hour += 24; // 25時, 26時に変換
+    }
+
+    // 日付部分を「○○年○○月○○日 25:○○」形式に変換
+    selectedFullDate = `${date.getFullYear()}年${('0' + (date.getMonth() + 1)).slice(-2)}月${('0' + date.getDate()).slice(-2)}日 ${hour}:${minute}`;
+
+    // 希望日時を即座に更新
+    updateDisplayInfo();
+}
 
         function submitForm() {
             const formData = {
@@ -533,7 +542,7 @@
                 return;
             }
 
-            const url = 'https://script.google.com/macros/s/AKfycbzllhLkNXkRViayOukO6at5lbR5P4hXTnlC7UIgrFqIJEI5JNo-FfLFUXdtIyVWKDjkiw/exec' +
+            const url = 'https://script.google.com/macros/s/AKfycbwlJRDTSgp2UsjC9s28ax_z0zVSztYEIE_wWouhFWh-NVgblJVGfZNRMKjNDFn2zC5Jcw/exec' +
                 `?startTime=${startTime.toISOString()}&endTime=${endTime.toISOString()}`;
 
             try {
@@ -565,7 +574,18 @@
             const calendar = document.getElementById('calendar1');
             const table = calendar.querySelector('table tbody');
 
-            const times = [
+// 時刻を24時間形式で変換する関数
+function convertTo24HourFormat(time) {
+    const [hour, minute] = time.split(':').map(Number);
+    if (hour < 3) {
+        // 0時～2時を24時以降に変換
+        return `${hour + 24}:${minute < 10 ? '0' + minute : minute}`;
+    }
+    return time;
+}
+
+// カレンダーの時間帯リスト
+const times = [
     '18:00', '18:15', '18:30', '18:45',
     '19:00', '19:15', '19:30', '19:45',
     '20:00', '20:15', '20:30', '20:45',
@@ -577,22 +597,24 @@
     '02:00'
 ];
 
-            if (table.rows.length === 0) {
-                for (const time of times) {
-                    const row = document.createElement('tr');
-                    const timeCell = document.createElement('td');
-                    timeCell.textContent = time;
-                    row.appendChild(timeCell);
+// テーブルの行を生成する際に24時間形式に変換して表示
+if (table.rows.length === 0) {
+    for (const time of times) {
+        const row = document.createElement('tr');
+        const timeCell = document.createElement('td');
+        // 表示する時間を24時間形式に変換
+        timeCell.textContent = convertTo24HourFormat(time);
+        row.appendChild(timeCell);
 
-                    for (let i = 0; i < 7; i++) {
-                        const cell = document.createElement('td');
-                        cell.addEventListener('click', () => selectDate(cell));
-                        row.appendChild(cell);
-                    }
+        for (let i = 0; i < 7; i++) {
+            const cell = document.createElement('td');
+            cell.addEventListener('click', () => selectDate(cell));
+            row.appendChild(cell);
+        }
 
-                    table.appendChild(row);
-                }
-            }
+        table.appendChild(row);
+    }
+}
 
             // テーブルのヘッダーを更新
             updateCalendarHeader(currentDate);
@@ -655,19 +677,28 @@ if (slotEnd.getHours() === 3 && slotEnd.getMinutes() > 0) {
     continue;
 }
 
-// 現在の時刻が深夜時間帯の場合（0時～2時）、過ぎた時間を×に設定
-if (now.getHours() >= 0 && now.getHours() < 3) {
-    // 現在時刻+3分を計算
-    const threeMinutesLater = new Date(now.getTime() + 30 * 60 * 1000);
-    
-    if (
-        slotStart.toDateString() === now.toDateString() &&
-        slotStart < threeMinutesLater
-    ) {
-        cell.textContent = '✕';
-        cell.classList.add('unavailable');
-        continue;
-    }
+// 30分後の時刻を計算
+const thirtyMinutesLater = new Date(now.getTime() + 30 * 60 * 1000);
+
+// 時間を26時～30時に変換する関数
+function normalizeTime(date) {
+    const hours = date.getHours();
+    const normalizedHours = hours < 6 ? hours + 24 : hours;
+    const normalizedDate = new Date(date);
+    normalizedDate.setHours(normalizedHours);
+    return normalizedDate;
+}
+
+// slotStartも正規化
+const normalizedSlotStart = normalizeTime(slotStart);
+const normalizedThirtyMinutesLater = normalizeTime(thirtyMinutesLater);
+
+// ここで終了時間を使った条件処理を行う
+// 例えば、リアルタイムで既に過ぎた時間帯や30分以内のスロットは×にする
+if (normalizedSlotStart < normalizedThirtyMinutesLater) {
+    cell.textContent = '✕';
+    cell.classList.add('unavailable');
+    continue;
 }
 
                     const isBusinessDay = businessDays.some(businessDay => {
