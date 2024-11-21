@@ -655,17 +655,20 @@ if (slotEnd.getHours() === 3 && slotEnd.getMinutes() > 0) {
     continue;
 }
 
-        // 現在の時刻が深夜時間帯の場合（0時～2時）、過ぎた時間を×に設定
-        if (now.getHours() >= 0 && now.getHours() < 3) {
-            if (
-                slotStart.toDateString() === now.toDateString() &&
-                slotStart.getHours() < now.getHours()
-            ) {
-                cell.textContent = '✕';
-                cell.classList.add('unavailable');
-                continue;
-            }
-        }
+// 現在の時刻が深夜時間帯の場合（0時～2時）、過ぎた時間を×に設定
+if (now.getHours() >= 0 && now.getHours() < 3) {
+    // 現在時刻+3分を計算
+    const threeMinutesLater = new Date(now.getTime() + 30 * 60 * 1000);
+    
+    if (
+        slotStart.toDateString() === now.toDateString() &&
+        slotStart < threeMinutesLater
+    ) {
+        cell.textContent = '✕';
+        cell.classList.add('unavailable');
+        continue;
+    }
+}
 
                     const isBusinessDay = businessDays.some(businessDay => {
                         const businessDayStart = new Date(businessDay.start);
