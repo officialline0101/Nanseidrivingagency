@@ -269,16 +269,46 @@
             font-weight: bold;
             /* 太文字に設定 */
         }
+
+        .info-text {
+            margin-top: 20px;
+            /* 上の余白 */
+            margin-bottom: 10px;
+            /* 下に白い隙間を追加 */
+            font-size: 13px;
+            color: #000000;
+            line-height: 1.5;
+            text-align: center;
+            word-wrap: break-word;
+            background-color: #eef9f5;
+            /* 青っぽい背景色を追加 */
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        /* 携帯端末向けのレスポンシブデザイン */
+        @media (max-width: 768px) {
+            .info-text {
+                font-size: 11.5px;
+                /* スマホでは少し小さく */
+                margin-top: 10px;
+                /* 上下のマージンを調整 */
+                line-height: 2.0;
+                /* テキストの高さ調整 */
+            }
+        }
+
     </style>
 </head>
 
 <body>
     <div class="container">
         <h1>南星運転代行<br>予約フォーム</h1>
-        <div class="label">お客様名※必須</div>
+        <div class="label">お客様名(必須)</div>
         <input type="text" id="name" placeholder="お名前を入力してください">
 
-        <div class="label">電話番号※必須</div>
+        <div class="label">電話番号(必須)</div>
+        <div class="info-text">※電話番号の入力に誤りがないようにお願いいたします。</div>
         <input type="tel" id="phone" placeholder="電話番号を入力してください">
 
         <div class="label">お迎え先(必須)<br>※駐車場が未定の場合は、未定とご入力下さい。</div>
@@ -438,38 +468,38 @@
         }
 
         function selectDate(cell) {
-    // "unavailable" クラスが付いている場合はクリックを無効化
-    if (cell.classList.contains('unavailable')) {
-        return; // 何もせずに終了
-    }
+            // "unavailable" クラスが付いている場合はクリックを無効化
+            if (cell.classList.contains('unavailable')) {
+                return; // 何もせずに終了
+            }
 
-    // 既に選択されているセルの選択を解除
-    const cells = document.querySelectorAll('.calendar td');
-    cells.forEach(td => td.classList.remove('selected'));
+            // 既に選択されているセルの選択を解除
+            const cells = document.querySelectorAll('.calendar td');
+            cells.forEach(td => td.classList.remove('selected'));
 
-    // 新しいセルを選択状態にする
-    cell.classList.add('selected');
+            // 新しいセルを選択状態にする
+            cell.classList.add('selected');
 
-    // 選択された日付と時間を取得
-    const selectedDay = cell.getAttribute('data-date'); // ISO形式の日付
-    const selectedTime = cell.parentElement.firstChild.textContent; // 時間
-    const date = new Date(selectedDay);
+            // 選択された日付と時間を取得
+            const selectedDay = cell.getAttribute('data-date'); // ISO形式の日付
+            const selectedTime = cell.parentElement.firstChild.textContent; // 時間
+            const date = new Date(selectedDay);
 
-    // 時間部分を調整 (0時～2時は25時形式に変更)
-    const timeParts = selectedTime.split(':');
-    let hour = parseInt(timeParts[0], 10);
-    const minute = timeParts[1];
+            // 時間部分を調整 (0時～2時は25時形式に変更)
+            const timeParts = selectedTime.split(':');
+            let hour = parseInt(timeParts[0], 10);
+            const minute = timeParts[1];
 
-    if (hour >= 0 && hour <= 2) {
-        hour += 24; // 25時, 26時に変換
-    }
+            if (hour >= 0 && hour <= 2) {
+                hour += 24; // 25時, 26時に変換
+            }
 
-    // 日付部分を「○○年○○月○○日 25:○○」形式に変換
-    selectedFullDate = `${date.getFullYear()}年${('0' + (date.getMonth() + 1)).slice(-2)}月${('0' + date.getDate()).slice(-2)}日 ${hour}:${minute}`;
+            // 日付部分を「○○年○○月○○日 25:○○」形式に変換
+            selectedFullDate = `${date.getFullYear()}年${('0' + (date.getMonth() + 1)).slice(-2)}月${('0' + date.getDate()).slice(-2)}日 ${hour}:${minute}`;
 
-    // 希望日時を即座に更新
-    updateDisplayInfo();
-}
+            // 希望日時を即座に更新
+            updateDisplayInfo();
+        }
 
         function submitForm() {
             const formData = {
@@ -481,36 +511,36 @@
                 message3: document.getElementById('message3').value
             };
 
-    // フォームデータのチェック
-    if (!formData.name) {
-        alert('お名前を入力してください。');
-        return;
-    }
+            // フォームデータのチェック
+            if (!formData.name) {
+                alert('お名前を入力してください。');
+                return;
+            }
 
-    if (!formData.phone) {
-        alert('電話番号を入力してください。');
-        return;
-    }
+            if (!formData.phone) {
+                alert('電話番号を入力してください。');
+                return;
+            }
 
-    if (!formData.message2) {
-        alert('お迎え先を選択してください。');
-        return;
-    }
+            if (!formData.message2) {
+                alert('お迎え先を選択してください。');
+                return;
+            }
 
-    if (!formData.message3) {
-        alert('お帰り先を選択してください。');
-        return;
-    }
+            if (!formData.message3) {
+                alert('お帰り先を選択してください。');
+                return;
+            }
 
-    if (!formData.dates[0]) {
-        alert('希望時間を選択してください。');
-        return;
-    }
+            if (!formData.dates[0]) {
+                alert('希望時間を選択してください。');
+                return;
+            }
 
             // LINEトークにメッセージを送信
             liff.sendMessages([{
                 type: 'text',
-                text: `【予約フォーム】\nお名前：${formData.name}\n電話番号：${formData.phone}\n予約：仮予約\nお迎え先：\n ${formData.message2}\nお帰り先：\n ${formData.message3}\n希望日時：\n ${formData.dates[0]}\nメッセージ：\n${formData.message}`
+                text: `【予約フォーム】\nお名前：${formData.name}\n\n電話番号：${formData.phone}\n\n予約：仮予約\n\nお迎え先：\n ${formData.message2}\n\nお帰り先：\n ${formData.message3}\n\n希望日時：\n ${formData.dates[0]}\n\nメッセージ：\n${formData.message}`
             }]).then(() => {
                 /* メッセージ送信成功時の処理 */
                 alert('担当より折返しの電話でご予約完了となりますので予めご了承下さい。');
@@ -574,47 +604,47 @@
             const calendar = document.getElementById('calendar1');
             const table = calendar.querySelector('table tbody');
 
-// 時刻を24時間形式で変換する関数
-function convertTo24HourFormat(time) {
-    const [hour, minute] = time.split(':').map(Number);
-    if (hour < 3) {
-        // 0時～2時を24時以降に変換
-        return `${hour + 24}:${minute < 10 ? '0' + minute : minute}`;
-    }
-    return time;
-}
+            // 時刻を24時間形式で変換する関数
+            function convertTo24HourFormat(time) {
+                const [hour, minute] = time.split(':').map(Number);
+                if (hour < 3) {
+                    // 0時～2時を24時以降に変換
+                    return `${hour + 24}:${minute < 10 ? '0' + minute : minute}`;
+                }
+                return time;
+            }
 
-// カレンダーの時間帯リスト
-const times = [
-    '18:00', '18:15', '18:30', '18:45',
-    '19:00', '19:15', '19:30', '19:45',
-    '20:00', '20:15', '20:30', '20:45',
-    '21:00', '21:15', '21:30', '21:45',
-    '22:00', '22:15', '22:30', '22:45',
-    '23:00', '23:15', '23:30', '23:45',
-    '00:00', '00:15', '00:30', '00:45',
-    '01:00', '01:15', '01:30', '01:45',
-    '02:00'
-];
+            // カレンダーの時間帯リスト
+            const times = [
+                '18:00', '18:15', '18:30', '18:45',
+                '19:00', '19:15', '19:30', '19:45',
+                '20:00', '20:15', '20:30', '20:45',
+                '21:00', '21:15', '21:30', '21:45',
+                '22:00', '22:15', '22:30', '22:45',
+                '23:00', '23:15', '23:30', '23:45',
+                '00:00', '00:15', '00:30', '00:45',
+                '01:00', '01:15', '01:30', '01:45',
+                '02:00'
+            ];
 
-// テーブルの行を生成する際に24時間形式に変換して表示
-if (table.rows.length === 0) {
-    for (const time of times) {
-        const row = document.createElement('tr');
-        const timeCell = document.createElement('td');
-        // 表示する時間を24時間形式に変換
-        timeCell.textContent = convertTo24HourFormat(time);
-        row.appendChild(timeCell);
+            // テーブルの行を生成する際に24時間形式に変換して表示
+            if (table.rows.length === 0) {
+                for (const time of times) {
+                    const row = document.createElement('tr');
+                    const timeCell = document.createElement('td');
+                    // 表示する時間を24時間形式に変換
+                    timeCell.textContent = convertTo24HourFormat(time);
+                    row.appendChild(timeCell);
 
-        for (let i = 0; i < 7; i++) {
-            const cell = document.createElement('td');
-            cell.addEventListener('click', () => selectDate(cell));
-            row.appendChild(cell);
-        }
+                    for (let i = 0; i < 7; i++) {
+                        const cell = document.createElement('td');
+                        cell.addEventListener('click', () => selectDate(cell));
+                        row.appendChild(cell);
+                    }
 
-        table.appendChild(row);
-    }
-}
+                    table.appendChild(row);
+                }
+            }
 
             // テーブルのヘッダーを更新
             updateCalendarHeader(currentDate);
@@ -666,40 +696,40 @@ if (table.rows.length === 0) {
                     // メニュー時間と訪問回数の時間を合計して、終了時間を設定
                     slotEnd.setMinutes(slotStart.getMinutes() + menuDuration + visitDuration + irradiationsDuration);
 
-// 深夜3時から4時に終了する予約を不可にする
-if (slotEnd.getHours() === 3 && slotEnd.getMinutes() > 0) {
-    cell.textContent = '✕';
-    cell.classList.add('unavailable');
-    continue;
-} else if (slotEnd.getHours() > 3 && slotEnd.getHours() < 9) {
-    cell.textContent = '✕';
-    cell.classList.add('unavailable');
-    continue;
-}
+                    // 深夜3時から4時に終了する予約を不可にする
+                    if (slotEnd.getHours() === 3 && slotEnd.getMinutes() > 0) {
+                        cell.textContent = '✕';
+                        cell.classList.add('unavailable');
+                        continue;
+                    } else if (slotEnd.getHours() > 3 && slotEnd.getHours() < 9) {
+                        cell.textContent = '✕';
+                        cell.classList.add('unavailable');
+                        continue;
+                    }
 
-// 30分後の時刻を計算
-const thirtyMinutesLater = new Date(now.getTime() + 30 * 60 * 1000);
+                    // 30分後の時刻を計算
+                    const thirtyMinutesLater = new Date(now.getTime() + 15 * 60 * 1000);
 
-// 時間を26時～30時に変換する関数
-function normalizeTime(date) {
-    const hours = date.getHours();
-    const normalizedHours = hours < 6 ? hours + 24 : hours;
-    const normalizedDate = new Date(date);
-    normalizedDate.setHours(normalizedHours);
-    return normalizedDate;
-}
+                    // 時間を26時～30時に変換する関数
+                    function normalizeTime(date) {
+                        const hours = date.getHours();
+                        const normalizedHours = hours < 6 ? hours + 24 : hours;
+                        const normalizedDate = new Date(date);
+                        normalizedDate.setHours(normalizedHours);
+                        return normalizedDate;
+                    }
 
-// slotStartも正規化
-const normalizedSlotStart = normalizeTime(slotStart);
-const normalizedThirtyMinutesLater = normalizeTime(thirtyMinutesLater);
+                    // slotStartも正規化
+                    const normalizedSlotStart = normalizeTime(slotStart);
+                    const normalizedThirtyMinutesLater = normalizeTime(thirtyMinutesLater);
 
-// ここで終了時間を使った条件処理を行う
-// 例えば、リアルタイムで既に過ぎた時間帯や30分以内のスロットは×にする
-if (normalizedSlotStart < normalizedThirtyMinutesLater) {
-    cell.textContent = '✕';
-    cell.classList.add('unavailable');
-    continue;
-}
+                    // ここで終了時間を使った条件処理を行う
+                    // 例えば、リアルタイムで既に過ぎた時間帯や30分以内のスロットは×にする
+                    if (normalizedSlotStart < normalizedThirtyMinutesLater) {
+                        cell.textContent = '✕';
+                        cell.classList.add('unavailable');
+                        continue;
+                    }
 
                     const isBusinessDay = businessDays.some(businessDay => {
                         const businessDayStart = new Date(businessDay.start);
@@ -721,48 +751,48 @@ if (normalizedSlotStart < normalizedThirtyMinutesLater) {
                         return acc;
                     }, 0);
 
-// 営業日のイベント時間内に他のイベントが3つ以上ある場合
-if (isBusinessEventTime && count >= 3) {
-    cell.textContent = '✕';
-    cell.classList.add('unavailable');
-}
-// 営業日のイベント時間内に他のイベントが1～2つある場合
-else if (isBusinessEventTime && count > 0) {
-    cell.textContent = '◯';
-    cell.classList.add('available');
-}
-// 営業日のイベント時間（他のイベントがない場合）
-else if (isBusinessEventTime) {
-    cell.textContent = '◯';
-    cell.classList.add('available');
-}
-// 営業日で、指定されている時間以外の時間は×
-else if (businessEventTimes.length > 0) {
-    cell.textContent = '✕';
-    cell.classList.add('unavailable');
-}
-// 営業日でかつ他のイベントがない場合
-else if (isBusinessDay && count === 0) {
-    cell.textContent = '◯';
-    cell.classList.add('available');
-}
-// それ以外の条件：イベントが3つ以上の場合は✕
-else if (count >= 3) {
-    cell.textContent = '✕';
-    cell.classList.add('unavailable');
-}
-// それ以外の条件：イベントが1～2個の場合は◯
-else if (count > 0) {
-    cell.textContent = '◯';
-    cell.classList.add('available');
-}
-// その他、イベントがない場合
-else {
-    cell.textContent = '◯';
-    cell.classList.add('available');
-}
+                    // 営業日のイベント時間内に他のイベントが3つ以上ある場合
+                    if (isBusinessEventTime && count >= 3) {
+                        cell.textContent = '✕';
+                        cell.classList.add('unavailable');
+                    }
+                    // 営業日のイベント時間内に他のイベントが1～2つある場合
+                    else if (isBusinessEventTime && count > 0) {
+                        cell.textContent = '◯';
+                        cell.classList.add('available');
+                    }
+                    // 営業日のイベント時間（他のイベントがない場合）
+                    else if (isBusinessEventTime) {
+                        cell.textContent = '◯';
+                        cell.classList.add('available');
+                    }
+                    // 営業日で、指定されている時間以外の時間は×
+                    else if (businessEventTimes.length > 0) {
+                        cell.textContent = '✕';
+                        cell.classList.add('unavailable');
+                    }
+                    // 営業日でかつ他のイベントがない場合
+                    else if (isBusinessDay && count === 0) {
+                        cell.textContent = '◯';
+                        cell.classList.add('available');
+                    }
+                    // それ以外の条件：イベントが3つ以上の場合は✕
+                    else if (count >= 3) {
+                        cell.textContent = '✕';
+                        cell.classList.add('unavailable');
+                    }
+                    // それ以外の条件：イベントが1～2個の場合は◯
+                    else if (count > 0) {
+                        cell.textContent = '◯';
+                        cell.classList.add('available');
+                    }
+                    // その他、イベントがない場合
+                    else {
+                        cell.textContent = '◯';
+                        cell.classList.add('available');
+                    }
 
-cell.setAttribute('data-date', slotStart.toISOString());
+                    cell.setAttribute('data-date', slotStart.toISOString());
                 }
             }
         }
