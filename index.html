@@ -1126,24 +1126,92 @@
                 });
 
                 for (let j = 0; j < times.length; j++) {
-                    const cell = table.rows[j].cells[i + 1];
+    let targetIndex = i + 1; // 通常の列インデックス
+    let targetDay = new Date(day); // デフォルトのターゲット日
 
-                    // すでにセルが✕の場合はスキップする
-                    if (cell.textContent === '✕') {
-                        continue;
-                    }
+    // '00:00'~'02:00' の場合は1つ左へずらす
+    if (['00:00', '00:15', '00:30', '00:45', '01:00', '01:15', '01:30', '01:45', '02:00'].includes(times[j])) {
+        if (i > 0) {
+            targetIndex = i; // 1つ左へずらす（前日へスライド）
+        } else if (i === 0) {
+            // 1日目の 00:00～02:00 は 2日目のデータを取得
+            targetIndex = 1; 
+            targetDay.setDate(targetDay.getDate() + 1);
+        } else {
+            continue; // i が 0 の場合はスキップ（前日にはずらさない）
+        }
+    }
 
-                    const slotStart = new Date(day);
-                    slotStart.setHours(parseInt(times[j].split(':')[0]), parseInt(times[j].split(':')[1]), 0, 0);
+    // **2日目（日曜）の 00:00～02:00 は 3日目（月曜）の情報を取得**
+    if (i === 1 && targetIndex === i) {
+        targetDay.setDate(targetDay.getDate() + 1); // 3日目のデータに変更
+        targetIndex = i + 1;
+    }
 
-                    const slotEnd = new Date(slotStart);
-                    let menuDuration = selectedMenuTime || 10;
-                    let visitDuration = selectedVisitTime || 0;
-                    let irradiationsDuration = selectedirradiationsTime || 0;
+    // **3日目（月曜）の 00:00～02:00 は 4日目（火曜）の情報を取得**
+    if (i === 2 && targetIndex === i) {
+        targetDay.setDate(targetDay.getDate() + 1);
+        targetIndex = i + 1;
+    }
 
-                    // メニュー時間と訪問回数の時間を合計して、終了時間を設定
-                    slotEnd.setMinutes(slotStart.getMinutes() + menuDuration + visitDuration + irradiationsDuration);
+    // **4日目（火曜）の 00:00～02:00 は 5日目（水曜）の情報を取得**
+    if (i === 3 && targetIndex === i) {
+        targetDay.setDate(targetDay.getDate() + 1);
+        targetIndex = i + 1;
+    }
 
+    // **5日目（水曜）の 00:00～02:00 は 6日目（木曜）の情報を取得**
+    if (i === 4 && targetIndex === i) {
+        targetDay.setDate(targetDay.getDate() + 1);
+        targetIndex = i + 1;
+    }
+
+    // **6日目（木曜）の 00:00～02:00 は 7日目（金曜）の情報を取得**
+    if (i === 5 && targetIndex === i) {
+        targetDay.setDate(targetDay.getDate() + 1);
+        targetIndex = i + 1;
+    }
+
+    // **7日目（金曜）の 00:00～02:00 は 8日目（土曜）の情報を取得**
+    if (i === 6 && targetIndex === i) {
+        targetDay.setDate(targetDay.getDate() + 1);
+        targetIndex = i + 1;
+    }
+
+    // **取得するセルを修正**
+    if (!table.rows[j] || !table.rows[j].cells[targetIndex]) {
+        console.warn(`セルが見つかりません: j=${j}, targetIndex=${targetIndex}`);
+        continue;
+    }
+    const cell = table.rows[j].cells[targetIndex];
+
+    // **すでにセルが✕の場合はスキップする**
+    if (cell.textContent === '✕') {
+        continue;
+    }
+
+    // **予約スロットの時間設定**
+    const slotStart = new Date(targetDay);
+    slotStart.setHours(parseInt(times[j].split(':')[0]), parseInt(times[j].split(':')[1]), 0, 0);
+
+    const slotEnd = new Date(slotStart);
+    let menuDuration = selectedMenuTime || 10;
+    let visitDuration = selectedVisitTime || 0;
+    let irradiationsDuration = selectedirradiationsTime || 0;
+    slotEnd.setMinutes(slotStart.getMinutes() + menuDuration + visitDuration + irradiationsDuration);
+
+    // **スライド先の日の予約情報を取得**
+    let nextDayAvailability = [];
+    if (
+        i === 0 || i === 1 || i === 2 || i === 3 || 
+        i === 4 || i === 5 || i === 6
+    ) {
+        nextDayAvailability = availability.filter(slot => {
+            const eventStart = new Date(slot.startTime);
+            return eventStart.toDateString() === targetDay.toDateString();
+        });
+    }
+    
                     // 深夜3時から4時に終了する予約を不可にする
                     if (slotEnd.getHours() === 3 && slotEnd.getMinutes() > 0) {
                         cell.textContent = '✕';
