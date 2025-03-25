@@ -722,18 +722,18 @@
             <div class="current-month-container">
                 <span class="current-month" id="currentMonth">月</span>
             </div>
-
+        
             <!-- 月移動ボタンを週移動ボタンの上に配置 -->
             <div class="month-button-container">
                 <button class="month-button" onclick="previousmonth()">前月</button>
                 <button class="month-button" onclick="nextmonth()">翌月</button>
             </div>
-
+        
             <div class="week-button-container">
                 <button class="week-button" onclick="previousWeek()">前週</button>
                 <button class="week-button" onclick="nextWeek()">翌週</button>
             </div>
-
+        
             <div id="calendar1" class="calendar">
                 <table>
                     <thead>
@@ -751,12 +751,24 @@
                     <tbody>
                         <!-- カレンダーの内容がここに追加される -->
                     </tbody>
+                    <tfoot>
+                        <tr id="calendar-footer">
+                            <th>時間</th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
-
+        
             <div class="labelContent">その他ご質問、ご要望などございましたらご記入ください。</div>
             <textarea id="message3" rows="4" placeholder="メッセージを入力してください。"></textarea>
-
+        
             <div class="loading-spinner" id="loadingSpinner">
                 <div class="spinner"></div>
             </div>
@@ -1021,7 +1033,7 @@
                 return;
             }
 
-            const url = 'https://script.google.com/macros/s/AKfycby3tOkxUBnnnGfnGLoV9Ny9C2wEer4TlFSKT8A-gEPkFSh9GWUWpvdTThLZRhFJYktQIA/exec' +
+            const url = 'https://script.google.com/macros/s/AKfycbwCxnJaxGZ46c3TnnesuZcD_zuxuVoSHoDHo5MxkRzChcK5vZDwBs4HstzkXO-KLyuDYA/exec' +
                 `?startTime=${startTime.toISOString()}&endTime=${endTime.toISOString()}`;
 
             try {
@@ -1314,8 +1326,11 @@
         }
 
         function updateCalendarHeader(date) {
-            const headerRow = document.getElementById('calendar-header');
-            const headers = headerRow.querySelectorAll('th:not(:first-child)');
+    const headerRow = document.getElementById('calendar-header');
+    const footerRow = document.getElementById('calendar-footer'); // フッター行を取得
+
+    const headers = headerRow.querySelectorAll('th:not(:first-child)');
+    const footers = footerRow.querySelectorAll('th:not(:first-child)'); // フッターのセルも取得
 
             // サンプルの祝日データ（必要に応じて動的に取得も検討）
             const holidays = [
@@ -1389,33 +1404,39 @@
             ];
 
             const startDate = new Date(date);
-            headers.forEach((th, index) => {
-                const day = new Date(startDate);
-                day.setDate(day.getDate() + index);
+    headers.forEach((th, index) => {
+        const day = new Date(startDate);
+        day.setDate(day.getDate() + index);
 
-                const dayOfWeek = ['日', '月', '火', '水', '木', '金', '土'];
-                const formattedDate = `${day.getFullYear()}-${(day.getMonth() + 1).toString().padStart(2, '0')}-${day.getDate().toString().padStart(2, '0')}`;
-                const dayString = `${day.getDate()}(${dayOfWeek[day.getDay()]})`;
+        const dayOfWeek = ['日', '月', '火', '水', '木', '金', '土'];
+        const formattedDate = `${day.getFullYear()}-${(day.getMonth() + 1).toString().padStart(2, '0')}-${day.getDate().toString().padStart(2, '0')}`;
+        const dayString = `${day.getDate()}(${dayOfWeek[day.getDay()]})`;
 
-                th.innerHTML = dayString.replace('(', '<br>(');
+        // ヘッダーのセルに日付をセット
+        th.innerHTML = dayString.replace('(', '<br>(');
+        // フッターのセルにも同じ日付をセット
+        footers[index].innerHTML = dayString.replace('(', '<br>(');
 
-                // 祝日を赤色に変更（曜日判定ではなく完全一致判定）
-                if (holidays.includes(formattedDate)) {
-                    th.style.color = 'red';
-                } else if (day.getDay() === 0) { // 日曜日（赤）
-                    th.style.color = 'red';
-                } else if (day.getDay() === 6) { // 土曜日（青）
-                    th.style.color = 'blue';
-                } else {
-                    th.style.color = ''; // 通常色にリセット
-                }
-            });
-
-            // 現在の月を表示
-            const currentMonthElement = document.getElementById('currentMonth');
-            currentMonthElement.innerHTML = `<span class="year">${startDate.getFullYear()}年</span><br><span class="month">${startDate.getMonth() + 1}月</span>`;
-
+        // 祝日・曜日ごとの色設定（フッターにも適用）
+        if (holidays.includes(formattedDate)) {
+            th.style.color = 'red';
+            footers[index].style.color = 'red';
+        } else if (day.getDay() === 0) { // 日曜日（赤）
+            th.style.color = 'red';
+            footers[index].style.color = 'red';
+        } else if (day.getDay() === 6) { // 土曜日（青）
+            th.style.color = 'blue';
+            footers[index].style.color = 'blue';
+        } else {
+            th.style.color = ''; // 通常色にリセット
+            footers[index].style.color = '';
         }
+    });
+
+    // 現在の月を表示
+    const currentMonthElement = document.getElementById('currentMonth');
+    currentMonthElement.innerHTML = `<span class="year">${startDate.getFullYear()}年</span><br><span class="month">${startDate.getMonth() + 1}月</span>`;
+}
 
         function nextmonth() {
             currentDate.setMonth(currentDate.getMonth() + 1); // 翌月に移動
