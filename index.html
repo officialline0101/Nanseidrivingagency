@@ -826,6 +826,21 @@
 
         let selectedMenuTime = 0;
 
+        // 入力内容をローカルストレージに保存
+        function saveInput(id) {
+            const value = document.getElementById(id).value;
+            localStorage.setItem(id, value);
+        }
+
+        // ページが読み込まれたときに前回の入力内容を復元
+        document.addEventListener('DOMContentLoaded', function () {
+            const savedName = localStorage.getItem('name');
+            const savedPhone = localStorage.getItem('phone');
+
+            if (savedName) document.getElementById('name').value = savedName;
+            if (savedPhone) document.getElementById('phone').value = savedPhone;
+        });
+
         // スムーズスクロール
         document.querySelectorAll('.side-nav a').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
@@ -1065,36 +1080,26 @@
             const calendar = document.getElementById('calendar1');
             const table = calendar.querySelector('table tbody');
 
-            // 時刻を24時間形式で変換する関数
-            function convertTo24HourFormat(time) {
-                const [hour, minute] = time.split(':').map(Number);
-                if (hour < 3) {
-                    // 0時～2時を24時以降に変換
-                    return `${hour + 24}:${minute < 10 ? '0' + minute : minute}`;
-                }
-                return time;
-            }
+// カレンダーの時間帯リスト
+const times = [
+    '00:00', '00:15', '00:30', '00:45',
+    '01:00', '01:15', '01:30', '01:45',
+    '02:00', '02:15', '02:30', '02:45',
+    '03:00', '03:15', '03:30', '03:45',
+    '04:00', '04:30',
+    '18:00', '18:15', '18:30', '18:45',
+    '19:00', '19:15', '19:30', '19:45',
+    '20:00', '20:15', '20:30', '20:45',
+    '21:00', '21:15', '21:30', '21:45',
+    '22:00', '22:15', '22:30', '22:45',
+    '23:00', '23:15', '23:30', '23:45'
+];
 
-            // カレンダーの時間帯リスト
-            const times = [
-                '18:00', '18:15', '18:30', '18:45',
-                '19:00', '19:15', '19:30', '19:45',
-                '20:00', '20:15', '20:30', '20:45',
-                '21:00', '21:15', '21:30', '21:45',
-                '22:00', '22:15', '22:30', '22:45',
-                '23:00', '23:15', '23:30', '23:45',
-                '00:00', '00:15', '00:30', '00:45',
-                '01:00', '01:15', '01:30', '01:45',
-                '02:00'
-            ];
-
-            // テーブルの行を生成する際に24時間形式に変換して表示
-            if (table.rows.length === 0) {
+if (table.rows.length === 0) {
                 for (const time of times) {
                     const row = document.createElement('tr');
                     const timeCell = document.createElement('td');
-                    // 表示する時間を24時間形式に変換
-                    timeCell.textContent = convertTo24HourFormat(time);
+                    timeCell.textContent = time;
                     row.appendChild(timeCell);
 
                     for (let i = 0; i < 7; i++) {
@@ -1138,122 +1143,34 @@
                 });
 
                 for (let j = 0; j < times.length; j++) {
-    let targetIndex = i + 1; // 通常の列インデックス
-    let targetDay = new Date(day); // デフォルトのターゲット日
+                    const cell = table.rows[j].cells[i + 1];
 
-    // '00:00'~'02:00' の場合は1つ左へずらす
-    if (['00:00', '00:15', '00:30', '00:45', '01:00', '01:15', '01:30', '01:45', '02:00'].includes(times[j])) {
-        if (i > 0) {
-            targetIndex = i; // 1つ左へずらす（前日へスライド）
-        } else if (i === 0) {
-            // 1日目の 00:00～02:00 は 2日目のデータを取得
-            targetIndex = 1; 
-            targetDay.setDate(targetDay.getDate() + 1);
-        } else {
-            continue; // i が 0 の場合はスキップ（前日にはずらさない）
-        }
-    }
-
-    // **2日目（日曜）の 00:00～02:00 は 3日目（月曜）の情報を取得**
-    if (i === 1 && targetIndex === i) {
-        targetDay.setDate(targetDay.getDate() + 1); // 3日目のデータに変更
-        targetIndex = i + 1;
-    }
-
-    // **3日目（月曜）の 00:00～02:00 は 4日目（火曜）の情報を取得**
-    if (i === 2 && targetIndex === i) {
-        targetDay.setDate(targetDay.getDate() + 1);
-        targetIndex = i + 1;
-    }
-
-    // **4日目（火曜）の 00:00～02:00 は 5日目（水曜）の情報を取得**
-    if (i === 3 && targetIndex === i) {
-        targetDay.setDate(targetDay.getDate() + 1);
-        targetIndex = i + 1;
-    }
-
-    // **5日目（水曜）の 00:00～02:00 は 6日目（木曜）の情報を取得**
-    if (i === 4 && targetIndex === i) {
-        targetDay.setDate(targetDay.getDate() + 1);
-        targetIndex = i + 1;
-    }
-
-    // **6日目（木曜）の 00:00～02:00 は 7日目（金曜）の情報を取得**
-    if (i === 5 && targetIndex === i) {
-        targetDay.setDate(targetDay.getDate() + 1);
-        targetIndex = i + 1;
-    }
-
-    // **7日目（金曜）の 00:00～02:00 は 8日目（土曜）の情報を取得**
-    if (i === 6 && targetIndex === i) {
-        targetDay.setDate(targetDay.getDate() + 1);
-        targetIndex = i + 1;
-    }
-
-    // **取得するセルを修正**
-    if (!table.rows[j] || !table.rows[j].cells[targetIndex]) {
-        console.warn(`セルが見つかりません: j=${j}, targetIndex=${targetIndex}`);
-        continue;
-    }
-    const cell = table.rows[j].cells[targetIndex];
-
-    // **すでにセルが✕の場合はスキップする**
-    if (cell.textContent === '✕') {
-        continue;
-    }
-
-    // **予約スロットの時間設定**
-    const slotStart = new Date(targetDay);
-    slotStart.setHours(parseInt(times[j].split(':')[0]), parseInt(times[j].split(':')[1]), 0, 0);
-
-    const slotEnd = new Date(slotStart);
-    let menuDuration = selectedMenuTime || 10;
-    let visitDuration = selectedVisitTime || 0;
-    let irradiationsDuration = selectedirradiationsTime || 0;
-    slotEnd.setMinutes(slotStart.getMinutes() + menuDuration + visitDuration + irradiationsDuration);
-
-    // **スライド先の日の予約情報を取得**
-    let nextDayAvailability = [];
-    if (
-        i === 0 || i === 1 || i === 2 || i === 3 || 
-        i === 4 || i === 5 || i === 6
-    ) {
-        nextDayAvailability = availability.filter(slot => {
-            const eventStart = new Date(slot.startTime);
-            return eventStart.toDateString() === targetDay.toDateString();
-        });
-    }
-    
-                    // 深夜3時から4時に終了する予約を不可にする
-                    if (slotEnd.getHours() === 3 && slotEnd.getMinutes() > 0) {
-                        cell.textContent = '✕';
-                        cell.classList.add('unavailable');
+                    // すでにセルが✕の場合はスキップする
+                    if (cell.textContent === '✕') {
                         continue;
-                    } else if (slotEnd.getHours() > 3 && slotEnd.getHours() < 9) {
+                    }
+
+                    const slotStart = new Date(day);
+                    slotStart.setHours(parseInt(times[j].split(':')[0]), parseInt(times[j].split(':')[1]), 0, 0);
+
+                    const slotEnd = new Date(slotStart);
+                    let menuDuration = selectedMenuTime || 10;
+                    let visitDuration = selectedVisitTime || 0;
+                    let irradiationsDuration = selectedirradiationsTime || 0;
+
+                    // メニュー時間と訪問回数の時間を合計して、終了時間を設定
+                    slotEnd.setMinutes(slotStart.getMinutes() + menuDuration + visitDuration + irradiationsDuration);
+
+                    // 終了時間が翌日 (0時以降) になる場合は✕に設定
+                    if (slotEnd.getDate() !== slotStart.getDate()) {
                         cell.textContent = '✕';
                         cell.classList.add('unavailable');
                         continue;
                     }
-
-                    // 30分後の時刻を計算
-                    const thirtyMinutesLater = new Date(now.getTime() + 15 * 60 * 1000);
-
-                    // 時間を26時～30時に変換する関数
-                    function normalizeTime(date) {
-                        const hours = date.getHours();
-                        const normalizedHours = hours < 6 ? hours + 24 : hours;
-                        const normalizedDate = new Date(date);
-                        normalizedDate.setHours(normalizedHours);
-                        return normalizedDate;
-                    }
-
-                    // slotStartも正規化
-                    const normalizedSlotStart = normalizeTime(slotStart);
-                    const normalizedThirtyMinutesLater = normalizeTime(thirtyMinutesLater);
 
                     // ここで終了時間を使った条件処理を行う
-                    // 例えば、リアルタイムで既に過ぎた時間帯や30分以内のスロットは×にする
-                    if (normalizedSlotStart < normalizedThirtyMinutesLater) {
+                    // 例えば、リアルタイムで既に過ぎた時間帯は×にする
+                    if (slotStart < now) {
                         cell.textContent = '✕';
                         cell.classList.add('unavailable');
                         continue;
@@ -1299,6 +1216,11 @@
                         cell.textContent = '✕';
                         cell.classList.add('unavailable');
                     }
+// 毎日04:30を✕にする
+if (slotStart.getHours() === 4 && slotStart.getMinutes() === 30) {
+    cell.textContent = '✕';
+    cell.classList.add('unavailable');
+}
                     // 営業日でかつ他のイベントがない場合
                     else if (isBusinessDay && count === 0) {
                         cell.textContent = '◯';
