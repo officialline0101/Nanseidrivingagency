@@ -1086,7 +1086,7 @@ const times = [
     '01:00', '01:15', '01:30', '01:45',
     '02:00', '02:15', '02:30', '02:45',
     '03:00', '03:15', '03:30', '03:45',
-    '04:00', '04:30',
+    '04:00', '04:30', '／',
     '18:00', '18:15', '18:30', '18:45',
     '19:00', '19:15', '19:30', '19:45',
     '20:00', '20:15', '20:30', '20:45',
@@ -1216,11 +1216,6 @@ if (table.rows.length === 0) {
                         cell.textContent = '✕';
                         cell.classList.add('unavailable');
                     }
-// 毎日04:30を✕にする
-if (slotStart.getHours() === 4 && slotStart.getMinutes() === 30) {
-    cell.textContent = '✕';
-    cell.classList.add('unavailable');
-}
                     // 営業日でかつ他のイベントがない場合
                     else if (isBusinessDay && count === 0) {
                         cell.textContent = '◯';
